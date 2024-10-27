@@ -20,6 +20,7 @@ jobs:
       - name: Check for new tags
         id: check_tags
         run: |
+          set -x
           # Check if new tags exist that are not in the current list
           new_tags=$(git tag --list 'v*' | grep -v -x -F -f <(git tag --list))
           if [ -n "$new_tags" ]; then
@@ -29,6 +30,8 @@ jobs:
             echo "No new tags found"
             echo "::set-output name=new_tags::"
           fi
+
+          set +x
 
       - name: Send Email Notification (Gmail)
         if: env.new_tags != ''  # Only sends if new tags are detected
