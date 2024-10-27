@@ -25,11 +25,12 @@ jobs:
         id: check_tags
         run: |
           # Fetch all tags
-          git fetch --tags
+          git fetch --tags || { echo "Failed to fetch tags"; exit 1; }
 
-          # Get new tags
-          new_tags=$(git tag --list 'v*' | grep -v -x -F -f <(git tag --list))
-          
+          # Get current tags and new tags
+          current_tags=$(git tag --list)
+          new_tags=$(git tag --list 'v*' | grep -v -x -F -f <(echo "$current_tags"))
+
           if [ -n "$new_tags" ]; then
             echo "New tags found: $new_tags"
             echo "new_tags=$new_tags" >> $GITHUB_ENV  # Store new tags in environment variable
@@ -51,4 +52,3 @@ jobs:
           to: ${{ secrets.TO_EMAIL }}
           from: ${{ secrets.GMAIL_USERNAME }}
           secure: starttls
-
