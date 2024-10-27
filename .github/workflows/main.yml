@@ -25,15 +25,19 @@ jobs:
           # Fetch all tags
           git fetch --tags || { echo "Failed to fetch tags"; exit 1; }
 
-          # List all tags and debug output
-          echo "Current tags:"
-          git tag --list
-
           # Get current tags and new tags
           current_tags=$(git tag --list)
           echo "Current tags stored in variable: $current_tags"
 
-          new_tags=$(git tag --list 'v*' | grep -v -x -F -f <(echo "$current_tags"))
+          # Create a temporary file to store the previous tags
+          previous_tags_file=$(mktemp)
+          if [[ -f previous_tags.txt ]]; then
+              cat previous_tags.txt > "$previous_tags_file"
+          else
+              echo "" > "$previous_tags_file"  # Create if it doesn't exist
+          fi
+
+          new_tags=$(git tag --list 'v*' | grep -v -x -F -f "$previous_tags_file")
 
           # Debugging output for new tags
           echo "New tags found:"
@@ -46,6 +50,9 @@ jobs:
               echo "No new tags found"
               echo "new_tags=" >> $GITHUB_ENV  # Clear the variable if no new tags
           fi
+
+          # Save the current tags for future runs
+          echo "$current_tags" > previous_tags.txt
 
           set +x  # Disable debugging
 
