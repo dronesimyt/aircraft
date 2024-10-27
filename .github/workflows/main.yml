@@ -26,7 +26,7 @@ jobs:
         run: |
           new_tags="v0.11.1"  # Manually set a test tag name
           echo "New tags found: $new_tags"
-          echo "::set-output name=new_tags::$new_tags"
+          echo "new_tags=$new_tags" >> $GITHUB_ENV
 
       - name: Send Email Notification (Gmail)
         if: steps.check_tags.outputs.new_tags  # Only sends if new tags are detected
@@ -36,8 +36,9 @@ jobs:
           server_port: 587
           username: ${{ secrets.GMAIL_USERNAME }}  # Your Gmail email address
           password: ${{ secrets.GMAIL_PASSWORD }}  # Gmail app password
-          secure: true
           subject: "New Tags Detected in Repository!"
-          body: "New tags were added to the repository: ${{ steps.check_tags.outputs.new_tags }}"
+          body: "New tags were added to the repository: ${{ env.new_tags }}"
           to: ${{ secrets.TO_EMAIL }}
           from: ${{ secrets.GMAIL_USERNAME }}
+          secure: starttls
+
