@@ -1,0 +1,49 @@
+name: Sync Tags and Check for Updates
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Runs every day at midnight (UTC)
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout your fork
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Ensures all tags are fetched
+
+      - name: Add upstream repository
+        run: git remote add upstream https://github.com/original_owner/original_repo.git
+
+      - name: Fetch tags from upstream
+        run: |
+          git fetch upstream --tags
+
+      - name: Check for new tags
+        id: check_tags
+        run: |
+          # Check if new tags exist that are not in the current list
+          new_tags=$(git tag --list 'v*' | grep -v -x -F -f <(git tag --list))
+          if [ -n "$new_tags" ]; then
+            echo "New tags found: $new_tags"
+            echo "::set-output name=new_tags::$new_tags"
+          else
+            echo "No new tags found"
+            echo "::set-output name=new_tags::"
+          fi
+
+      - name: Send Email Notification (Gmail)
+        if: steps.check_tags.outputs.new_tags  # Only sends if new tags are detected
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.GMAIL_USERNAME }}  # Your Gmail email address
+          password: ${{ secrets.GMAIL_PASSWORD }}  # Gmail app password
+          secure: true
+          subject: "New Tags Detected in Repository!"
+          body: "New tags were added to the repository: ${{ steps.check_tags.outputs.new_tags }}"
+          to: ${{ secrets.TO_EMAIL }}
+          from: ${{ secrets.GMAIL_USERNAME }}
