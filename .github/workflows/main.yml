@@ -24,9 +24,19 @@ jobs:
       - name: Check for new tags
         id: check_tags
         run: |
-          new_tags="v0.11.1"  # Manually set a test tag name
-          echo "New tags found: $new_tags"
-          echo "new_tags=$new_tags" >> $GITHUB_ENV
+          # Fetch all tags
+          git fetch --tags
+
+          # Get new tags
+          new_tags=$(git tag --list 'v*' | grep -v -x -F -f <(git tag --list))
+          
+          if [ -n "$new_tags" ]; then
+            echo "New tags found: $new_tags"
+            echo "new_tags=$new_tags" >> $GITHUB_ENV  # Store new tags in environment variable
+          else
+            echo "No new tags found"
+            echo "new_tags=" >> $GITHUB_ENV  # Clear the variable if no new tags
+          fi
 
       - name: Send Email Notification (Gmail)
         if: env.new_tags != ''  # Only sends if new tags are detected
