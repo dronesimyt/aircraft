@@ -17,27 +17,37 @@ jobs:
       - name: Add upstream repository
         run: git remote add upstream https://github.com/flybywiresim/aircraft.git
 
-      - name: Fetch tags from upstream
-        run: |
-          git fetch upstream --tags
-
       - name: Check for new tags
         id: check_tags
         run: |
+          set -x  # Enable debugging
+
           # Fetch all tags
           git fetch --tags || { echo "Failed to fetch tags"; exit 1; }
 
+          # List all tags and debug output
+          echo "Current tags:"
+          git tag --list
+
           # Get current tags and new tags
           current_tags=$(git tag --list)
+          echo "Current tags stored in variable: $current_tags"
+
           new_tags=$(git tag --list 'v*' | grep -v -x -F -f <(echo "$current_tags"))
 
+          # Debugging output for new tags
+          echo "New tags found:"
+          echo "$new_tags"
+
           if [ -n "$new_tags" ]; then
-            echo "New tags found: $new_tags"
-            echo "new_tags=$new_tags" >> $GITHUB_ENV  # Store new tags in environment variable
+              echo "New tags found: $new_tags"
+              echo "new_tags=$new_tags" >> $GITHUB_ENV  # Store new tags in environment variable
           else
-            echo "No new tags found"
-            echo "new_tags=" >> $GITHUB_ENV  # Clear the variable if no new tags
+              echo "No new tags found"
+              echo "new_tags=" >> $GITHUB_ENV  # Clear the variable if no new tags
           fi
+
+          set +x  # Disable debugging
 
       - name: Send Email Notification (Gmail)
         if: env.new_tags != ''  # Only sends if new tags are detected
@@ -52,3 +62,4 @@ jobs:
           to: ${{ secrets.TO_EMAIL }}
           from: ${{ secrets.GMAIL_USERNAME }}
           secure: starttls
+
