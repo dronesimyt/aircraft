@@ -2,7 +2,7 @@ name: Sync Tags and Check for Updates
 
 on:
   schedule:
-    - cron: '*/30 * * * *'  # Runs every day at midnight (UTC)
+    - cron: '*/15 * * * *'  # Runs every day at midnight (UTC)
   workflow_dispatch:
 
 jobs:
