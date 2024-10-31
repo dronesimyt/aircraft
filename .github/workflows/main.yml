@@ -17,17 +17,16 @@ jobs:
       - name: Add upstream repository
         run: git remote add upstream https://github.com/flybywiresim/aircraft.git
 
-      - name: Check for new tags
+      - name: Check for tag v0.12.0
         id: check_tags
         run: |
           set -x
-          # Check if new tags exist that are not in the current list
-          new_tags=$(git tag --list 'v*' | grep -v -x -F -f <(git tag --list) || true)
-          if [ -n "$new_tags" ]; then
-            echo "New tags found: $new_tags"
-            echo "::set-output name=new_tags::$new_tags"
+          # Check if the specific tag v0.12.0 exists
+          if git tag --list 'v0.12.0' | grep -q 'v0.12.0'; then
+            echo "Tag v0.12.0 found"
+            echo "::set-output name=new_tags::v0.12.0"
           else
-            echo "No new tags found"
+            echo "Tag v0.12.0 not found"
             echo "::set-output name=new_tags::"
           fi
           set +x
