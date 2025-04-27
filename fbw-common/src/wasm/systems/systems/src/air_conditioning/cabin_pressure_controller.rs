@@ -27,7 +27,7 @@ use uom::si::{
     velocity::{foot_per_minute, knot, meter_per_second},
 };
 
-#[derive(Eq, PartialEq, Clone, Copy)]
+#[derive(Eq, PartialEq, Clone, Copy, Hash)]
 pub enum CpcId {
     Cpc1,
     Cpc2,
@@ -1451,6 +1451,7 @@ mod tests {
         const OUTFLOW_VALVE_SIZE: f64 = 0.05; // m2
         const SAFETY_VALVE_SIZE: f64 = 0.02; //m2
         const DOOR_OPENING_AREA: f64 = 1.5; // m2
+        const HULL_BREACH_AREA: f64 = 0.02; // m2
 
         const MAX_CLIMB_RATE: f64 = 750.; // fpm
         const MAX_CLIMB_RATE_IN_DESCENT: f64 = 500.; // fpm
